@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบจัดการสต็อกสินค้าร้านอิ่มใจ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar-ocean">
+  <div class="nav-container">
+    <a class="navbar-brand" href="#" onclick="switchTab('page-products', this)">
+      <span class="shop-icon">🏪</span> ร้านอิ่มใจ
+    </a>
+    <ul class="navbar-nav">
+      <li><button class="nav-link active" onclick="switchTab('page-products', this)">📦 ข้อมูลสินค้า</button></li>
+      <li><button class="nav-link" onclick="switchTab('page-stockin', this)">📥 รับสินค้าเข้า</button></li>
+      <li><button class="nav-link" onclick="switchTab('page-stockout', this)">📤 เบิกสินค้าออก</button></li>
+      <li><button class="nav-link" onclick="switchTab('page-employees', this)">👥 พนักงาน</button></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="main-container">
+  <h2 class="page-title">🌊 ระบบจัดการสต็อกสินค้าร้านอิ่มใจ ✨</h2>
+
+  <div class="stats-grid">
+    <div class="stat-card card-teal">
+      <div class="stat-icon">🛍️</div>
+      <div>
+        <div class="stat-label">รายการสินค้าทั้งหมด:</div>
+        <div class="stat-value" id="totalItems">3 รายการ</div>
+      </div>
+    </div>
+    <div class="stat-card card-sky">
+      <div class="stat-icon">🧺</div>
+      <div>
+        <div class="stat-label">ยอดรวมในคลัง:</div>
+        <div class="stat-value" id="totalQty">66 ชิ้น</div>
+      </div>
+    </div>
+    <div class="stat-card card-coral">
+      <div class="stat-icon">⏰</div>
+      <div>
+        <div class="stat-label">สินค้าใกล้หมด:</div>
+        <div class="stat-value" id="lowStock">1 รายการ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- หน้า 1: ข้อมูลสินค้า -->
+  <div id="page-products" class="page-section active">
+    <div class="content-grid">
+      <div class="content-box">
+        <div class="box-title">
+          <span>📦 รายการสินค้าคงเหลือ (Product)</span>
+          <input type="text" id="searchInput" onkeyup="renderProducts()" placeholder="🔍 ค้นหาชื่อ/รหัส..." class="form-control" style="width: 190px; padding: 6px 12px; font-size: 0.85rem;">
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>รหัส</th>
+                <th class="text-left">ชื่อสินค้า</th>
+                <th>หมวดหมู่</th>
+                <th>ราคา</th>
+                <th>คงเหลือ</th>
+                <th>สถานะ</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="productTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-box">
+        <div class="box-title" style="justify-content: center;" id="productFormTitle">➕ เพิ่มสินค้าใหม่</div>
+        <input type="hidden" id="editIndex" value="-1">
+        <div class="form-group">
+          <label class="form-label">รหัสสินค้า (ProductID):</label>
+          <input type="text" id="pId" class="form-control" placeholder="เช่น P004">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อสินค้า (ProductName):</label>
+          <input type="text" id="pName" class="form-control" placeholder="เช่น สบู่ก้อน">
+        </div>
+        <div class="form-group">
+          <label class="form-label">หมวดหมู่:</label>
+          <select id="pCategory" class="form-control">
+            <option value="ของใช้">ของใช้</option>
+            <option value="เครื่องดื่ม">เครื่องดื่ม</option>
+            <option value="อาหาร">อาหาร</option>
+            <option value="ขนม">ขนม</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ราคาขาย (บาท):</label>
+          <input type="number" id="pPrice" class="form-control" placeholder="เช่น 20">
+        </div>
+        <div class="form-group">
+          <label class="form-label">จำนวนเริ่มต้น (StockQty):</label>
+          <input type="number" id="pQty" class="form-control" placeholder="เช่น 10">
+        </div>
+        <button onclick="saveProduct()" class="btn-ocean" id="btnSaveProduct">บันทึกสินค้า</button>
+        <button onclick="resetProductForm()" class="btn-cancel" id="btnCancelEdit">ยกเลิกการแก้ไข</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- หน้า 2: รับสินค้าเข้า -->
+  <div id="page-stockin" class="page-section">
+    <div class="content-grid">
+      <div class="content-box">
+        <div class="box-title">📥 ประวัติการรับสินค้าเข้า (Stock_In)</div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>รหัสรับเข้า</th>
+                <th>วันที่-เวลา</th>
+                <th class="text-left">สินค้า</th>
+                <th>จำนวนรับเข้า</th>
+                <th>ผู้บันทึก</th>
+              </tr>
+            </thead>
+            <tbody id="stockInTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-box">
+        <div class="box-title" style="justify-content: center;">✏️ บันทึกรับสินค้าเข้า</div>
+        <div class="form-group">
+          <label class="form-label">เลือกสินค้า:</label>
+          <select id="inProductSelect" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">จำนวนที่รับเข้า (InQty):</label>
+          <input type="number" id="inQtyInput" class="form-control" value="10" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">พนักงานผู้ทำรายการ:</label>
+          <select id="inEmpSelect" class="form-control"></select>
+        </div>
+        <button onclick="addStockIn()" class="btn-ocean">ยืนยันรับสินค้าเข้า</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- หน้า 3: เบิกสินค้าออก -->
+  <div id="page-stockout" class="page-section">
+    <div class="content-grid">
+      <div class="content-box">
+        <div class="box-title">📤 ประวัติการเบิกสินค้าออก (Stock_Out)</div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>รหัสเบิกออก</th>
+                <th>วันที่-เวลา</th>
+                <th class="text-left">สินค้า</th>
+                <th>จำนวนเบิก</th>
+                <th>หมายเหตุ</th>
+                <th>ผู้บันทึก</th>
+              </tr>
+            </thead>
+            <tbody id="stockOutTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-box">
+        <div class="box-title" style="justify-content: center;">✏️ บันทึกเบิกสินค้าออก</div>
+        <div class="form-group">
+          <label class="form-label">เลือกสินค้า:</label>
+          <select id="outProductSelect" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">จำนวนที่เบิกออก (OutQty):</label>
+          <input type="number" id="outQtyInput" class="form-control" value="1" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">สาเหตุ/หมายเหตุ:</label>
+          <input type="text" id="outRemarkInput" class="form-control" value="ขายหน้าร้าน">
+        </div>
+        <div class="form-group">
+          <label class="form-label">พนักงานผู้ทำรายการ:</label>
+          <select id="outEmpSelect" class="form-control"></select>
+        </div>
+        <button onclick="addStockOut()" class="btn-ocean">ยืนยันเบิกสินค้าออก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- หน้า 4: พนักงาน -->
+  <div id="page-employees" class="page-section">
+    <div class="content-grid">
+      <div class="content-box">
+        <div class="box-title">👥 รายชื่อพนักงานร้านอิ่มใจ (Employee)</div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>รหัสพนักงาน</th>
+                <th class="text-left">ชื่อ-นามสกุล</th>
+                <th>ตำแหน่ง</th>
+                <th>เบอร์โทรศัพท์</th>
+              </tr>
+            </thead>
+            <tbody id="empTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-box">
+        <div class="box-title" style="justify-content: center;">➕ เพิ่มข้อมูลพนักงาน</div>
+        <div class="form-group">
+          <label class="form-label">รหัสพนักงาน (EmpID):</label>
+          <input type="text" id="eId" class="form-control" placeholder="เช่น E003">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อ-นามสกุล (EmpName):</label>
+          <input type="text" id="eName" class="form-control" placeholder="เช่น นายสมชาย ใจดี">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ตำแหน่ง (Position):</label>
+          <select id="ePos" class="form-control">
+            <option value="เจ้าของร้าน">เจ้าของร้าน</option>
+            <option value="พนักงานขาย">พนักงานขาย</option>
+            <option value="พนักงานคลังสินค้า">พนักงานคลังสินค้า</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">เบอร์โทรศัพท์ (Phone):</label>
+          <input type="text" id="ePhone" class="form-control" placeholder="เช่น 08x-xxx-xxxx">
+        </div>
+        <button onclick="addEmployee()" class="btn-ocean">บันทึกข้อมูลพนักงาน</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
